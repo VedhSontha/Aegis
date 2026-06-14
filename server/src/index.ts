@@ -8,6 +8,7 @@ import reportRoutes from './routes/report.routes';
 import generateRoutes from './routes/generate.routes';
 import statsRoutes from './routes/stats.routes';
 import aiRoutes from './routes/ai.routes';
+import simulateRoutes from './routes/simulate.routes';
 
 // Load config
 dotenv.config();
@@ -57,6 +58,7 @@ app.use('/api/report', reportRoutes);
 app.use('/api/generate', generateRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/simulate', scanLimiter, simulateRoutes);
 
 // Fallback Route
 app.use((req, res) => {

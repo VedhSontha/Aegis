@@ -1,6 +1,6 @@
 /**
  * AEGIS AI Security Analyst
- * Sends the real scan findings to Claude and returns a structured, prioritized
+ * Sends the real scan findings to Gemini and returns a structured, prioritized
  * security briefing. Uses native fetch (Node 18+) — no SDK dependency.
  */
 
@@ -48,7 +48,6 @@ function gradeToRisk(grade: string): AiAnalysis['riskLevel'] {
   return 'Critical';
 }
 
-/** Pull a JSON object out of a model response that may include prose or code fences. */
 function extractJson(text: string): string {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
   if (fenced) return fenced[1].trim();
@@ -59,14 +58,14 @@ function extractJson(text: string): string {
 }
 
 export async function analyzeScan(input: AiAnalysisInput): Promise<AiAnalysis> {
-  const key = process.env.ANTHROPIC_API_KEY;
+  const key = process.env.GEMINI_API_KEY;
   if (!key) {
     throw new AiConfigError(
-      'AI Analyst is not configured. Add ANTHROPIC_API_KEY to the server environment to enable it.'
+      'AI Analyst is not configured. Add GEMINI_API_KEY to the server environment to enable it.'
     );
   }
 
-  const model = process.env.AEGIS_AI_MODEL || 'claude-3-5-sonnet-latest';
+  const model = process.env.AEGIS_AI_MODEL || 'gemini-2.0-flash';
   const failed = input.findings.filter((f) => !f.passed);
   const findingList =
     failed.map((f) => `- [${f.severity}] ${f.title} (${f.category}) — ${f.evidence}`).join('\n') ||
@@ -96,32 +95,29 @@ Rules:
    - "action": the single most important remediation step.
 - Be specific to the findings above. Do not invent issues that are not listed.`;
 
-  let resp: Response;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+
+  let resp: globalThis.Response;
   try {
-    resp = await fetch('https://api.anthropic.com/v1/messages', {
+    resp = await fetch(url, {
       method: 'POST',
-      headers: {
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json'
-      },
+      headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
-        model,
-        max_tokens: 1300,
-        messages: [{ role: 'user', content: prompt }]
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { maxOutputTokens: 1300, temperature: 0.3 }
       })
     });
   } catch (err) {
-    throw new Error(`Could not reach the Anthropic API: ${(err as Error).message}`);
+    throw new Error(`Could not reach the Gemini API: ${(err as Error).message}`);
   }
 
   if (!resp.ok) {
     const body = await resp.text();
-    throw new Error(`Anthropic API error (${resp.status}): ${body.slice(0, 240)}`);
+    throw new Error(`Gemini API error (${resp.status}): ${body.slice(0, 240)}`);
   }
 
   const data: any = await resp.json();
-  const text: string = data?.content?.[0]?.text ?? '';
+  const text: string = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
 
   try {
     const parsed = JSON.parse(extractJson(text)) as AiAnalysis;
@@ -129,7 +125,6 @@ Rules:
     if (!Array.isArray(parsed.priorities)) parsed.priorities = [];
     return parsed;
   } catch {
-    // Model returned prose instead of JSON — degrade gracefully.
     return {
       headline: `Security posture for ${input.target}`,
       riskLevel: gradeToRisk(input.grade),
