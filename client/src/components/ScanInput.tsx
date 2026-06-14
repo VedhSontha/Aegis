@@ -100,11 +100,11 @@ export default function ScanInput() {
         <Magnetic>
           <button
             type="button"
-            onClick={() => handleQuickScan('github:expressjs/express')}
+            onClick={() => handleQuickScan('https://example.com')}
             disabled={loading}
             className="px-3 py-1.5 bg-surface hover:bg-surface-2 border border-border-dim rounded-md text-text-dim font-mono transition-all cursor-pointer"
           >
-            github:expressjs/express
+            example.com [URL scan]
           </button>
         </Magnetic>
       </div>
