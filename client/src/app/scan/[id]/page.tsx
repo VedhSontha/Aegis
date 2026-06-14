@@ -218,6 +218,16 @@ export default function ScanDashboard() {
   return (
     <main className="min-h-screen text-text-primary px-4 md:px-8 py-8 max-w-6xl mx-auto flex flex-col gap-6">
       
+      {/* Repo scan scope warning */}
+      {!scanning && scan?.targetType === 'repo' && (
+        <div className="flex items-start gap-3 px-4 py-3 bg-amber-950/30 border border-amber-700/40 rounded-xl text-xs font-mono">
+          <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+          <span className="text-amber-200/80">
+            <span className="text-amber-400 font-semibold">Repo scan:</span> Only dependency CVEs and committed secrets were checked — no live web probes ran because this is source code, not a running server. To test HTTP security headers, clickjacking, CSRF, and XSS, deploy the app and scan its live URL.
+          </span>
+        </div>
+      )}
+
       {/* Top dashboard control bar */}
       <section className="flex flex-col md:flex-row md:items-center justify-between border-b border-border-dim/30 pb-5 gap-4">
         <div className="flex items-center gap-3">
