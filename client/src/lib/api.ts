@@ -10,6 +10,12 @@ export async function getStats(): Promise<Stats> {
   return res.json();
 }
 
+async function safeJson(res: Response): Promise<Record<string, unknown>> {
+  const ct = res.headers.get('content-type') || '';
+  if (!ct.includes('application/json')) return {};
+  return res.json().catch(() => ({}));
+}
+
 export async function triggerScan(target: string): Promise<{ scanId: string; target: string; type: 'url' | 'repo' }> {
   const res = await fetch(`${API_BASE}/scan`, {
     method: 'POST',
@@ -18,8 +24,11 @@ export async function triggerScan(target: string): Promise<{ scanId: string; tar
   });
 
   if (!res.ok) {
-    const errData = await res.json();
-    throw new Error(errData.error || 'Failed to initialize scan.');
+    if (res.status >= 500 || res.status === 0) {
+      throw new Error('AEGIS server is warming up — please wait a few seconds and try again.');
+    }
+    const errData = await safeJson(res);
+    throw new Error((errData.error as string) || 'Failed to initialize scan.');
   }
 
   return res.json();
