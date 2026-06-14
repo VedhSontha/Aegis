@@ -1,0 +1,31 @@
+# Render Blueprint for the AEGIS backend (Express + TypeScript).
+# Deploy: Render Dashboard → New → Blueprint → connect github.com/VedhSontha/Aegis.
+# Render auto-detects this file. After the service is created, fill in the
+# secret env vars marked `sync: false` (MONGODB_URI, GEMINI_API_KEY, CLIENT_ORIGIN).
+#
+# NOTE: do NOT set PORT — Render injects it automatically and the server reads
+# process.env.PORT.
+services:
+  - type: web
+    name: aegis-server
+    runtime: node
+    rootDir: server
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: MONGODB_URI
+        sync: false           # paste your MongoDB Atlas connection string
+      - key: GEMINI_API_KEY
+        sync: false           # paste your Google Gemini API key
+      - key: CLIENT_ORIGIN
+        sync: false           # set to your Vercel URL, e.g. https://aegis.vercel.app
+      - key: AEGIS_AI_MODEL
+        value: gemini-2.0-flash
+      - key: ALLOW_LOCAL_SCANS
+        value: "false"        # MUST be false in prod (keeps SSRF protection on)
+      - key: SCAN_TIMEOUT_MS
+        value: "8000"
+      - key: MAX_CONCURRENCY
+        value: "4"
