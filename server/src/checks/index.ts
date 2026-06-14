@@ -5,7 +5,13 @@ import { cookieSecurityCheck } from './cookies.check';
 import { corsCheck } from './cors.check';
 import { disclosureCheck } from './disclosure.check';
 import { clickjackCheck } from './clickjack.check';
-import { dependencyCheck } from './deps.check';
+import { xssReflectedCheck } from './xss.check';
+
+export type FindingCategory =
+  | 'headers' | 'transport' | 'cookies' | 'cors' | 'disclosure' | 'clickjacking'
+  | 'dependencies' | 'xss' | 'secrets' | 'code';
+
+export type FixLang = 'http' | 'javascript' | 'bash' | 'yaml' | 'python' | 'sql' | 'text';
 
 export interface CheckResult {
   passed: boolean;
@@ -13,14 +19,14 @@ export interface CheckResult {
   fix: {
     text: string;
     code: string;
-    lang: 'http' | 'javascript' | 'bash' | 'yaml';
+    lang: FixLang;
   };
   descriptionOverride?: string;
 }
 
 export interface Check {
   id: string;
-  category: 'headers' | 'transport' | 'cookies' | 'cors' | 'disclosure' | 'clickjacking' | 'dependencies';
+  category: FindingCategory;
   title: string;
   severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
   weight: number;
@@ -48,8 +54,8 @@ export const checkRegistry: Check[] = [
   disclosureCheck,
   // Clickjacking
   clickjackCheck,
-  // Dependencies
-  dependencyCheck
+  // Reflected XSS
+  xssReflectedCheck
 ];
 
 export async function runChecks(
