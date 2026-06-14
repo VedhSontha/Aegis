@@ -66,7 +66,7 @@ export async function analyzeScan(input: AiAnalysisInput): Promise<AiAnalysis> {
     );
   }
 
-  const model = process.env.AEGIS_AI_MODEL || 'claude-sonnet-4-6';
+  const model = process.env.AEGIS_AI_MODEL || 'claude-3-5-sonnet-latest';
   const failed = input.findings.filter((f) => !f.passed);
   const findingList =
     failed.map((f) => `- [${f.severity}] ${f.title} (${f.category}) — ${f.evidence}`).join('\n') ||
