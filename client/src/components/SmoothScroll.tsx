@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import Lenis from 'lenis';
 
 /**
@@ -9,6 +10,9 @@ import Lenis from 'lenis';
  * natively.
  */
 export default function SmoothScroll({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const lenisRef = useRef<Lenis | null>(null);
+
   useEffect(() => {
     // respect reduced-motion users
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -20,6 +24,8 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
       touchMultiplier: 1.6
     });
 
+    lenisRef.current = lenis;
+
     let rafId = 0;
     const raf = (time: number) => {
       lenis.raf(time);
@@ -27,11 +33,30 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
     };
     rafId = requestAnimationFrame(raf);
 
+    // Watch for dynamic DOM changes (e.g. scan console logs, findings loader)
+    const resizeObserver = new ResizeObserver(() => {
+      lenis.resize();
+    });
+    if (document.body) {
+      resizeObserver.observe(document.body);
+    }
+
     return () => {
       cancelAnimationFrame(rafId);
+      resizeObserver.disconnect();
       lenis.destroy();
+      lenisRef.current = null;
     };
   }, []);
+
+  // On page/pathname change, reset scroll to top and recalculate layout heights
+  useEffect(() => {
+    const lenis = lenisRef.current;
+    if (lenis) {
+      lenis.resize();
+      lenis.scrollTo(0, { immediate: true });
+    }
+  }, [pathname]);
 
   return <>{children}</>;
 }

@@ -9,7 +9,9 @@ import Reveal from '../components/Reveal';
 import ShaderBackground from '../components/ShaderBackground';
 import FloatingPaths from '../components/FloatingPaths';
 import Spotlight from '../components/Spotlight';
-import { Shield, Lock, Eye, CheckCircle } from 'lucide-react';
+import { Shield, Lock, Eye, CheckCircle, Swords } from 'lucide-react';
+import Link from 'next/link';
+
 
 export default function Home() {
   const [sliderScore, setSliderScore] = useState(45); // default vulnerable state

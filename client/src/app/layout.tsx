@@ -33,9 +33,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${displaySans.variable} ${monoFont.variable} h-full antialiased`}
+      className={`${displaySans.variable} ${monoFont.variable} antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-screen flex flex-col">
         <IntroLoader />
         <CustomCursor />
         <SmoothScroll>{children}</SmoothScroll>
