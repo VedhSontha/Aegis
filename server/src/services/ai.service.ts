@@ -104,7 +104,15 @@ Rules:
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { maxOutputTokens: 1300, temperature: 0.3 }
+        generationConfig: {
+          maxOutputTokens: 2048,
+          temperature: 0.3,
+          // Force pure JSON so we never get markdown fences or prose wrappers.
+          responseMimeType: 'application/json',
+          // gemini-2.5-* burns "thinking" tokens against maxOutputTokens, which was
+          // truncating the JSON mid-string. Disable thinking for a fast, complete reply.
+          thinkingConfig: { thinkingBudget: 0 }
+        }
       })
     });
   } catch (err) {
