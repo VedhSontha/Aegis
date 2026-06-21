@@ -6,6 +6,7 @@ import { corsCheck } from './cors.check';
 import { disclosureCheck } from './disclosure.check';
 import { clickjackCheck } from './clickjack.check';
 import { xssReflectedCheck } from './xss.check';
+import { dependencyCheck } from './deps.check';
 
 export type FindingCategory =
   | 'headers' | 'transport' | 'cookies' | 'cors' | 'disclosure' | 'clickjacking'
@@ -55,7 +56,9 @@ export const checkRegistry: Check[] = [
   // Clickjacking
   clickjackCheck,
   // Reflected XSS
-  xssReflectedCheck
+  xssReflectedCheck,
+  // Dependencies
+  dependencyCheck
 ];
 
 export async function runChecks(
