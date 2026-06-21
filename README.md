@@ -153,6 +153,7 @@ MONGODB_URI=mongodb://127.0.0.1:27017/aegis
 PORT=8080
 CLIENT_ORIGIN=http://localhost:3000
 GEMINI_API_KEY=your-key-here
+AEGIS_AI_MODEL=gemini-2.0-flash
 ALLOW_LOCAL_SCANS=true
 ```
 
