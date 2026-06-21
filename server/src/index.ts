@@ -42,6 +42,12 @@ app.use(express.json());
 const scanLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 30,
+  handler: (req, res, next, options) => {
+    res.status(options.statusCode).json({
+      error: (options.message as { error: string }).error,
+      retryAfterSeconds: Math.ceil(options.windowMs / 1000)
+    });
+  },
   message: { error: 'Rate limit exceeded. Please try again after 60 seconds.' },
   standardHeaders: true,
   legacyHeaders: false

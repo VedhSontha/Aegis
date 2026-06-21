@@ -130,7 +130,7 @@ export const certValidCheck: Check = {
           fix: {
             text: 'Disable TLS v1.0 and TLS v1.1 on your server; enforce TLS v1.2 or TLS v1.3 only.',
             code: 'ssl_protocols TLSv1.2 TLSv1.3;',
-            lang: 'nginx' as const
+            lang: 'bash' as const
           }
         };
       }
