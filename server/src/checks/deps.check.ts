@@ -144,11 +144,16 @@ export const dependencyCheck: Check = {
 
     // Check auxiliary security indicators
     const hasSecurityMd = await fetchFromGitHub(owner, repo, 'SECURITY.md').then(Boolean);
+    const hasSecurityTxt = await fetchFromGitHub(owner, repo, 'SECURITY.txt').then(Boolean);
+    const hasSecurityDotgithub = await fetchFromGitHub(owner, repo, '.github/SECURITY.md').then(Boolean);
+    const hasSecurityDotgithubTxt = await fetchFromGitHub(owner, repo, '.github/security.txt').then(Boolean);
+    const hasSecurityPolicy = hasSecurityMd || hasSecurityTxt || hasSecurityDotgithub || hasSecurityDotgithubTxt;
+
     const hasDependabot = await fetchFromGitHub(owner, repo, '.github/dependabot.yml').then(Boolean);
 
     const extraIndicators: string[] = [];
-    if (!hasSecurityMd) {
-      extraIndicators.push('SECURITY.md missing at root');
+    if (!hasSecurityPolicy) {
+      extraIndicators.push('SECURITY.md/txt policy missing');
     }
     if (!hasDependabot) {
       extraIndicators.push('.github/dependabot.yml missing');
