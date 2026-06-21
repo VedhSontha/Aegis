@@ -97,11 +97,13 @@ AEGIS runs lightweight, non-intrusive checks across five disciplines:
 | | Referrer-Policy | Low |
 | | Permissions-Policy | Low |
 | **Transport** | HTTPS availability | High |
+| | HTTP→HTTPS redirect traversal | Medium |
 | | Certificate validity & CA trust | Medium |
+| | TLS version & cipher strength validation | Medium |
 | **Cookies** | HttpOnly, Secure, SameSite attributes | Medium |
 | **CORS** | Origin validation & wildcard probes | High |
 | **Framing** | Clickjacking frame injection test | Medium |
-| **XSS** | Reflected input reflection probes | High |
+| **XSS** | Reflected input parameter reflection probes | High |
 | **Disclosure** | Server version header leakage | Low |
 | **Dependencies** | GitHub package audit via OSV.dev API | High |
 
