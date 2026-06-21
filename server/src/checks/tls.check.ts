@@ -119,9 +119,27 @@ export const certValidCheck: Check = {
       }
     }
 
+    // Protocol strength check
+    if (ctx.tls.protocol) {
+      const weakProtocols = ['TLSv1', 'TLSv1.1', 'SSLv3', 'SSLv2'];
+      const isWeak = weakProtocols.some(p => ctx.tls?.protocol?.includes(p));
+      if (isWeak) {
+        return {
+          passed: false,
+          evidence: `Negotiated weak TLS protocol version: "${ctx.tls.protocol}" (Cipher: ${ctx.tls.cipher || 'Unknown'})`,
+          fix: {
+            text: 'Disable TLS v1.0 and TLS v1.1 on your server; enforce TLS v1.2 or TLS v1.3 only.',
+            code: 'ssl_protocols TLSv1.2 TLSv1.3;',
+            lang: 'nginx' as const
+          }
+        };
+      }
+    }
+
+    const protoDetails = ctx.tls.protocol ? ` via ${ctx.tls.protocol} (${ctx.tls.cipher || 'Unknown'})` : '';
     return {
       passed: true,
-      evidence: `Valid certificate. Issuer: "${ctx.tls.issuer || 'Unknown'}". Expires: ${ctx.tls.validTo || 'Unknown'}`,
+      evidence: `Valid certificate${protoDetails}. Issuer: "${ctx.tls.issuer || 'Unknown'}". Expires: ${ctx.tls.validTo || 'Unknown'}`,
       fix: { text: '', code: '', lang: 'http' }
     };
   }
