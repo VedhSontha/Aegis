@@ -32,8 +32,18 @@ function parseTarget(target: string): { target: string; type: 'url' | 'repo'; er
 
   try {
     const parsed = new URL(cleaned);
-    // Preserve path + query (so /range and ?q=... are actually scanned), but keep
-    // bare domains clean as just the origin.
+    const hostname = parsed.hostname;
+    if (!hostname) {
+      return { target: '', type: 'url', error: 'Hostname is missing.' };
+    }
+    // Reject hosts with whitespace, quotes, angle brackets, or backslashes
+    if (/[\s<>'"\\]/.test(hostname)) {
+      return { target: '', type: 'url', error: 'Hostname contains invalid characters.' };
+    }
+    // Require a dot in hostnames unless it is localhost or a valid IP
+    if (hostname !== 'localhost' && !hostname.includes('.') && !/^\d{1,3}(\.\d{1,3}){3}$/.test(hostname)) {
+      return { target: '', type: 'url', error: 'Invalid hostname format (missing TLD or domain boundary).' };
+    }
     const target = parsed.pathname === '/' && !parsed.search ? parsed.origin : parsed.href;
     return { target, type: 'url' };
   } catch (e) {
