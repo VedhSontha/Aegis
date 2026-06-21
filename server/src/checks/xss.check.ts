@@ -25,13 +25,11 @@ export const xssReflectedCheck: Check = {
       };
     }
 
-    const paramNames = [...url.searchParams.keys()];
+    let paramNames = [...url.searchParams.keys()];
+    let usingDefaultProbes = false;
     if (paramNames.length === 0) {
-      return {
-        passed: true,
-        evidence: 'No query parameters present to probe for reflection (scan a URL like ?q=test to test XSS).',
-        fix: { text: '', code: '', lang: 'http' }
-      };
+      paramNames = ['q', 'query', 'search', 'id', 'redirect', 'url', 'callback'];
+      usingDefaultProbes = true;
     }
 
     const reflected: string[] = [];
@@ -72,7 +70,9 @@ export const xssReflectedCheck: Check = {
 
     return {
       passed: true,
-      evidence: `Probed ${names.length} parameter(s); inputs were encoded or not reflected.`,
+      evidence: usingDefaultProbes
+        ? `Probed ${names.length} common parameter(s) (${names.join(', ')}); no input reflection detected.`
+        : `Probed ${names.length} parameter(s); inputs were encoded or not reflected.`,
       fix: { text: '', code: '', lang: 'http' }
     };
   }
