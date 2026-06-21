@@ -10,7 +10,13 @@ export interface ScanContext {
   headers: Record<string, string>;
   setCookies: string[];
   bodySnippet: string;
-  tls: { valid: boolean; issuer?: string; validTo?: string } | null;
+  tls: { 
+    valid: boolean; 
+    issuer?: string; 
+    validTo?: string;
+    protocol?: string;
+    cipher?: string;
+  } | null;
 }
 
 function getTlsInfo(host: string, port = 443): Promise<ScanContext['tls']> {
@@ -26,6 +32,8 @@ function getTlsInfo(host: string, port = 443): Promise<ScanContext['tls']> {
         () => {
           const cert = socket.getPeerCertificate();
           const authorized = socket.authorized;
+          const protocol = socket.getProtocol() || undefined;
+          const cipher = socket.getCipher()?.name || undefined;
           socket.end();
           if (!cert || Object.keys(cert).length === 0) {
             resolve(null);
@@ -33,7 +41,9 @@ function getTlsInfo(host: string, port = 443): Promise<ScanContext['tls']> {
             resolve({
               valid: authorized,
               issuer: typeof cert.issuer === 'object' ? (Array.isArray(cert.issuer.O) ? cert.issuer.O[0] : cert.issuer.O) || (Array.isArray(cert.issuer.CN) ? cert.issuer.CN[0] : cert.issuer.CN) : undefined,
-              validTo: cert.valid_to
+              validTo: cert.valid_to,
+              protocol,
+              cipher
             });
           }
         }
