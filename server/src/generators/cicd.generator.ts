@@ -32,11 +32,20 @@ jobs:
           SCAN_ID=$(echo $RESPONSE | jq -r '.scanId')
           echo "Scan initiated. Scan ID: $SCAN_ID"
 
-          # Wait for scan processing to finish
-          sleep 4
-          
-          # Query grade
-          GRADE_INFO=$(curl -s "${aegisApiUrl}/scan/$SCAN_ID")
+          # Wait for scan processing to finish by polling status
+          echo "Waiting for scan to complete..."
+          ATTEMPT=0
+          MAX_ATTEMPTS=30
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            GRADE_INFO=$(curl -s "${aegisApiUrl}/scan/$SCAN_ID")
+            STATUS=$(echo $GRADE_INFO | jq -r '.scan.status')
+            echo "Current status: $STATUS"
+            if [ "$STATUS" = "complete" ] || [ "$STATUS" = "error" ]; then
+              break
+            fi
+            sleep 2
+            ATTEMPT=$((ATTEMPT + 1))
+          done
           GRADE=$(echo $GRADE_INFO | jq -r '.scan.grade')
           SCORE=$(echo $GRADE_INFO | jq -r '.scan.score')
           
@@ -68,8 +77,19 @@ aegis_security_scan:
         -d "{\\"target\\":\\"${targetName}\\"}")
       SCAN_ID=$(echo $RESPONSE | jq -r '.scanId')
       echo "Scan started. Scan ID: $SCAN_ID"
-      sleep 4
-      GRADE_INFO=$(curl -s "${aegisApiUrl}/scan/$SCAN_ID")
+      echo "Waiting for scan to complete..."
+      ATTEMPT=0
+      MAX_ATTEMPTS=30
+      while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+        GRADE_INFO=$(curl -s "${aegisApiUrl}/scan/$SCAN_ID")
+        STATUS=$(echo $GRADE_INFO | jq -r '.scan.status')
+        echo "Current status: $STATUS"
+        if [ "$STATUS" = "complete" ] || [ "$STATUS" = "error" ]; then
+          break
+        fi
+        sleep 2
+        ATTEMPT=$((ATTEMPT + 1))
+      done
       GRADE=$(echo $GRADE_INFO | jq -r '.scan.grade')
       SCORE=$(echo $GRADE_INFO | jq -r '.scan.score')
       echo "AEGIS Security Rating - Score: $SCORE | Grade: $GRADE"
