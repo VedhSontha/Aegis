@@ -79,6 +79,7 @@ export async function createScan(req: Request, res: Response) {
     await scan.save();
     return res.status(201).json({ scanId: scan._id, target: scan.target, type: scan.targetType });
   } catch (error) {
+    console.error('Failed to initialize scan:', error);
     return res.status(500).json({ error: 'Failed to initialize scan.' });
   }
 }
