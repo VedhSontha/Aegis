@@ -8,13 +8,16 @@ export function isPrivateIP(ip: string): boolean {
   if (process.env.ALLOW_LOCAL_SCANS === 'true') {
     return false;
   }
-  // IPv4 Loopback and Private ranges
+  // IPv4 Loopback, Localhost, Private, and CGNAT ranges
   if (
     ip === '127.0.0.1' ||
+    ip === '0.0.0.0' ||
+    ip.toLowerCase() === 'localhost' ||
     ip.startsWith('127.') ||
     ip.startsWith('10.') ||
     ip.startsWith('192.168.') ||
-    ip.startsWith('169.254.')
+    ip.startsWith('169.254.') ||
+    ip.startsWith('100.64.')
   ) {
     return true;
   }
