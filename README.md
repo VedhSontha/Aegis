@@ -113,8 +113,8 @@ AEGIS runs lightweight, non-intrusive checks across five disciplines:
 
 The scanner itself can't be weaponized. All scan targets route through a custom DNS resolver (`ssrf.guard.ts`) that blocks:
 
-- Loopback: `127.0.0.0/8`, `localhost`, `::1`
-- Private ranges: `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`
+- Loopback & Localhost: `127.0.0.0/8`, `0.0.0.0`, `localhost`, `::1`
+- Private & CGNAT ranges: `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `100.64.0.0/10`
 - Cloud metadata: `169.254.169.254`
 
 ---
