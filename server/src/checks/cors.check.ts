@@ -18,9 +18,10 @@ export const corsCheck: Check = {
     const baseCredentials = ctx.headers['access-control-allow-credentials'];
 
     // Real probe: request target URL with an external origin header
+    let timeout: NodeJS.Timeout | undefined;
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 3000);
+      timeout = setTimeout(() => controller.abort(), 3000);
       const res = await fetch(ctx.url, {
         method: 'GET',
         headers: {
@@ -28,7 +29,8 @@ export const corsCheck: Check = {
         },
         signal: controller.signal
       });
-      clearTimeout(timeout);
+      if (timeout) clearTimeout(timeout);
+      timeout = undefined;
 
       const allowOrigin = res.headers.get('access-control-allow-origin');
       const allowCredentials = res.headers.get('access-control-allow-credentials');
@@ -78,6 +80,10 @@ export const corsCheck: Check = {
             lang: 'http'
           }
         };
+      }
+    } finally {
+      if (timeout) {
+        clearTimeout(timeout);
       }
     }
 
