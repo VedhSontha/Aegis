@@ -38,21 +38,25 @@ export const xssReflectedCheck: Check = {
     for (const name of names) {
       const probe = new URL(url.toString());
       probe.searchParams.set(name, PAYLOAD);
+      let timeout: NodeJS.Timeout | undefined;
       try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 6000);
+        timeout = setTimeout(() => controller.abort(), 6000);
         const res = await fetch(probe.toString(), {
           method: 'GET',
           signal: controller.signal,
           headers: { 'User-Agent': 'AEGIS-Security-Scanner/1.0' }
         });
-        clearTimeout(timeout);
         const body = await res.text();
         if (body.includes(`<${MARKER}>`)) {
           reflected.push(name);
         }
       } catch {
         // ignore individual probe failures
+      } finally {
+        if (timeout) {
+          clearTimeout(timeout);
+        }
       }
     }
 
