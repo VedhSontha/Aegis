@@ -24,6 +24,24 @@ export const clickjackCheck: Check = {
       };
     }
 
+    if (xfo) {
+      const xfoVal = xfo.toLowerCase().trim();
+      if (xfoVal === 'allowall' || xfoVal.startsWith('allow-from')) {
+        const isAllowAll = xfoVal === 'allowall';
+        return {
+          passed: false,
+          evidence: isAllowAll 
+            ? 'X-Frame-Options set to insecure ALLOWALL directive, permitting framing by any site.'
+            : `X-Frame-Options uses deprecated and ignored ALLOW-FROM directive ("${xfo}").`,
+          fix: {
+            text: 'Replace obsolete X-Frame-Options values with DENY or SAMEORIGIN, or migrate to the CSP frame-ancestors directive.',
+            code: 'X-Frame-Options: SAMEORIGIN\nContent-Security-Policy: frame-ancestors \'self\';',
+            lang: 'http'
+          }
+        };
+      }
+    }
+
     return {
       passed: true,
       evidence: xfo ? `Framing blocked by X-Frame-Options: "${xfo}"` : 'Framing blocked by CSP frame-ancestors directive.',
