@@ -48,8 +48,10 @@ export const xssReflectedCheck: Check = {
           headers: { 'User-Agent': 'AEGIS-Security-Scanner/1.0' }
         });
         const body = await res.text();
-        if (body.includes(`<${MARKER}>`)) {
-          reflected.push(name);
+        const reflectsTag = body.includes(`<${MARKER}>`);
+        const reflectsQuote = body.includes(`"${MARKER}`) || body.includes(`'${MARKER}`);
+        if (reflectsTag || reflectsQuote) {
+          reflected.push(`${name} (${reflectsTag ? 'tag-injection' : 'attribute-injection'})`);
         }
       } catch {
         // ignore individual probe failures
@@ -63,7 +65,7 @@ export const xssReflectedCheck: Check = {
     if (reflected.length > 0) {
       return {
         passed: false,
-        evidence: `Parameter(s) reflect input unescaped: ${reflected.join(', ')} (raw <${MARKER}> echoed in response).`,
+        evidence: `Parameter(s) reflect input unescaped: ${reflected.join(', ')}.`,
         fix: {
           text: 'Context-encode all user input before rendering it into HTML, and add a strict Content-Security-Policy as defense in depth.',
           code: `// Encode on output (example)\nimport { escape } from 'lodash';\nelement.textContent = userInput;        // safe\nelement.innerHTML = escape(userInput); // if HTML is required`,
