@@ -8,23 +8,34 @@ export function isPrivateIP(ip: string): boolean {
   if (process.env.ALLOW_LOCAL_SCANS === 'true') {
     return false;
   }
+
+  let cleanIp = ip.trim().toLowerCase();
+  if (cleanIp.startsWith('[') && cleanIp.endsWith(']')) {
+    cleanIp = cleanIp.slice(1, -1);
+  }
+
+  // Handle IPv4-mapped IPv6 format (e.g. ::ffff:127.0.0.1)
+  if (cleanIp.startsWith('::ffff:')) {
+    cleanIp = cleanIp.substring(7);
+  }
+
   // IPv4 Loopback, Localhost, Private, and CGNAT ranges
   if (
-    ip === '127.0.0.1' ||
-    ip === '0.0.0.0' ||
-    ip.toLowerCase() === 'localhost' ||
-    ip.startsWith('127.') ||
-    ip.startsWith('10.') ||
-    ip.startsWith('192.168.') ||
-    ip.startsWith('169.254.') ||
-    ip.startsWith('100.64.')
+    cleanIp === '127.0.0.1' ||
+    cleanIp === '0.0.0.0' ||
+    cleanIp === 'localhost' ||
+    cleanIp.startsWith('127.') ||
+    cleanIp.startsWith('10.') ||
+    cleanIp.startsWith('192.168.') ||
+    cleanIp.startsWith('169.254.') ||
+    cleanIp.startsWith('100.64.')
   ) {
     return true;
   }
 
   // IPv4 172.16.0.0 - 172.31.255.255
-  if (ip.startsWith('172.')) {
-    const parts = ip.split('.').map(Number);
+  if (cleanIp.startsWith('172.')) {
+    const parts = cleanIp.split('.').map(Number);
     if (parts[1] >= 16 && parts[1] <= 31) {
       return true;
     }
@@ -32,11 +43,11 @@ export function isPrivateIP(ip: string): boolean {
 
   // IPv6 check
   if (
-    ip === '::1' ||
-    ip === '0:0:0:0:0:0:0:1' ||
-    ip.toLowerCase().startsWith('fe80:') ||
-    ip.toLowerCase().startsWith('fc00:') ||
-    ip.toLowerCase().startsWith('fd00:')
+    cleanIp === '::1' ||
+    cleanIp === '0:0:0:0:0:0:0:1' ||
+    cleanIp.startsWith('fe80:') ||
+    cleanIp.startsWith('fc00:') ||
+    cleanIp.startsWith('fd00:')
   ) {
     return true;
   }
