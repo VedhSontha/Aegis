@@ -21,12 +21,19 @@ export const cspCheck: Check = {
       };
     }
 
-    if (csp.includes("'unsafe-inline'") && !csp.includes("'nonce-") && !csp.includes("'hash-")) {
+    const hasUnsafeInline = csp.includes("'unsafe-inline'") && !csp.includes("'nonce-") && !csp.includes("'hash-");
+    const hasUnsafeEval = csp.includes("'unsafe-eval'");
+
+    if (hasUnsafeInline || hasUnsafeEval) {
+      const reasons: string[] = [];
+      if (hasUnsafeInline) reasons.push("allows 'unsafe-inline' scripts without nonce or hash restriction");
+      if (hasUnsafeEval) reasons.push("allows 'unsafe-eval' script execution");
+
       return {
         passed: false,
-        evidence: `CSP found but contains unsafe policy: "${csp}"`,
+        evidence: `CSP found but contains unsafe configuration: ${reasons.join(' and ')}. Policy: "${csp}"`,
         fix: {
-          text: 'Remove the unsafe-inline directive or restrict it using cryptographic nonces or hashes.',
+          text: 'Remove the unsafe-inline and unsafe-eval directives, or restrict inline scripts using cryptographic nonces or hashes.',
           code: "Content-Security-Policy: default-src 'self'; script-src 'self' 'nonce-rAnd0m123';",
           lang: 'http'
         }
