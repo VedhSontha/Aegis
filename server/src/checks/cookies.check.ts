@@ -28,7 +28,10 @@ export const cookieSecurityCheck: Check = {
 
       const hasHttpOnly = parts.some(p => p.toLowerCase() === 'httponly');
       const hasSecure = parts.some(p => p.toLowerCase() === 'secure');
-      const hasSameSite = parts.some(p => p.toLowerCase().startsWith('samesite='));
+      
+      const sameSitePart = parts.find(p => p.toLowerCase().startsWith('samesite='));
+      const hasSameSite = !!sameSitePart;
+      const isSameSiteNone = sameSitePart ? sameSitePart.split('=')[1]?.toLowerCase().trim() === 'none' : false;
 
       const missing: string[] = [];
       if (!hasHttpOnly) {
@@ -42,6 +45,9 @@ export const cookieSecurityCheck: Check = {
       if (!hasSameSite) {
         missing.push('SameSite');
         containsSameSiteIssue = true;
+      } else if (isSameSiteNone && !hasSecure) {
+        missing.push('Secure (mandated by SameSite=None)');
+        containsSecureIssue = true;
       }
 
       if (missing.length > 0) {
