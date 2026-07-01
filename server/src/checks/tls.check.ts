@@ -101,12 +101,22 @@ export const certValidCheck: Check = {
       };
     }
 
-    // Expiry check (alert if less than 15 days)
+    // Expiry check (alert if expired or less than 15 days remaining)
     if (ctx.tls.validTo) {
       const expiryDate = new Date(ctx.tls.validTo);
       const daysLeft = Math.round((expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
       
-      if (daysLeft < 15) {
+      if (daysLeft <= 0) {
+        return {
+          passed: false,
+          evidence: `Certificate has EXPIRED (Expiry Date: ${ctx.tls.validTo})`,
+          fix: {
+            text: 'Renew the SSL/TLS certificate immediately to prevent client browser connection rejections.',
+            code: 'certbot renew',
+            lang: 'bash'
+          }
+        };
+      } else if (daysLeft < 15) {
         return {
           passed: false,
           evidence: `Certificate valid but expiring soon in ${daysLeft} days (Expires: ${ctx.tls.validTo})`,
