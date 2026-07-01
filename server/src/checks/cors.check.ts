@@ -49,10 +49,23 @@ export const corsCheck: Check = {
         }
       }
 
-      if (allowOrigin === 'https://aegis-probe.example') {
+      if (allowOrigin === 'null') {
         return {
           passed: false,
-          evidence: `CORS reflects arbitrary origin back: Access-Control-Allow-Origin: "${allowOrigin}"`,
+          evidence: 'Access-Control-Allow-Origin: null (permits data extraction via sandboxed iframe attacks)',
+          fix: {
+            text: 'Do not use "null" as the allowed origin. Explicitly specify a whitelist of trusted domains.',
+            code: 'Access-Control-Allow-Origin: https://trustedapp.com',
+            lang: 'http'
+          }
+        };
+      }
+
+      if (allowOrigin === 'https://aegis-probe.example') {
+        const isCredentialed = allowCredentials === 'true';
+        return {
+          passed: false,
+          evidence: `CORS dynamically reflects arbitrary origin ("${allowOrigin}")${isCredentialed ? ' with Access-Control-Allow-Credentials: true' : ''}`,
           fix: {
             text: 'Reflecting arbitrary Origin request headers without validating against an explicit whitelist allows any third-party script to bypass CORS.',
             code: 'CORS Action: Implement strict server-side origin whitelist validation.',
