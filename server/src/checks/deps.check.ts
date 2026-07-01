@@ -55,6 +55,9 @@ export const dependencyCheck: Check = {
         const paths = parsedUrl.pathname.split('/').filter(Boolean);
         owner = paths[0];
         repo = paths[1];
+        if (repo && repo.endsWith('.git')) {
+          repo = repo.slice(0, -4);
+        }
       } catch (e) {
         return {
           passed: false,
